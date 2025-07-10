@@ -11,25 +11,40 @@ Este projeto simula um ambiente corporativo de engenharia e análise de dados ut
 
 Utilizamos Azure Data Factory para orquestração e Azure Data Flow (Spark) para transformação dos dados, organizando os dados nas camadas Bronze, Silver e Gold.
 
+---
+
+### 🎯 Objetivos de aprendizagem
+
+- Simular um ambiente de dados corporativo real
+- Aprender o fluxo de ingestão e tratamento em camadas
+- Aplicar boas práticas de arquitetura em nuvem
+- Documentar e versionar o projeto para portfólio
+
+---
+
 ### 🗂 Estrutura dos Dados
 
 - **Camada Bronze:** dados brutos importados diretamente dos arquivos CSV originais.
 - **Camada Silver:** dados limpos e estruturados, com tratamentos e ajustes.
 - **Camada Gold:** dados transformados, agregados e prontos para análise e consumo, armazenados em arquivos CSV únicos.
 
+---
+
 ## 📁 Dados Utilizados
 
 Os dados utilizados são arquivos CSV simulando dados de pedidos, clientes, produtos, pagamentos, geolocalização e avaliações, com schemas interligados.
 
+---
 
 ### ⚙️ Tecnologias e Ferramentas
 
 - Microsoft Azure Data Factory (ADF)
-- Azure Data Flow (Spark)
 - Azure Blob Storage (para armazenar arquivos CSV)
 - Azure Portal para gerenciamento
+-  Azure Data Flow (Spark)
 - GitHub para versionamento e documentação
 
+---
 
 ### 🔧 Passos para Reproduzir o Projeto
 
@@ -40,6 +55,7 @@ Os dados utilizados são arquivos CSV simulando dados de pedidos, clientes, prod
 5. Executar pipelines e verificar arquivos transformados na camada Gold.
 6. Opcional: conectar ferramentas de BI (ex: Power BI) para análise.
 
+---
 
 ### 📝 Sobre a Transformação Principal
 
@@ -47,6 +63,7 @@ Os dados utilizados são arquivos CSV simulando dados de pedidos, clientes, prod
 - Produz um CSV único (`pedidos_com_clientes.csv`) na camada Gold.
 - Parâmetros configurados para permitir reuso e escalabilidade.
 
+---
 
 ### 💡 Observações
 
@@ -54,5 +71,9 @@ Os dados utilizados são arquivos CSV simulando dados de pedidos, clientes, prod
 - O projeto pode ser expandido para incluir outras tabelas e transformações.
 - Ideal para aprendizado prático de pipelines de dados no Azure.
 
+---
+## ✨ Autora
 
+Thayla Oliveira  
+[LinkedIn](https://linkedin.com/in/thayla-oliveira) | [Email](thaylathais1@gmail.com)
 
