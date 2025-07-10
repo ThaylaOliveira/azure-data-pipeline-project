@@ -1,0 +1,1191 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Data Factory name",
+            "defaultValue": "adf-projeto-dados"
+        },
+        "ls_blob_bronze_connectionString": {
+            "type": "secureString",
+            "metadata": "Secure string for 'connectionString' of 'ls_blob_bronze'"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_blob_bronze')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "Conexão com a Storage Account no Azure que armazena os arquivos CSV brutos (camada Bronze) utilizados como fonte de entrada no projeto de pipeline de dados.",
+                "annotations": [],
+                "type": "AzureBlobStorage",
+                "typeProperties": {
+                    "connectionString": "[parameters('ls_blob_bronze_connectionString')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_orders_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "Dataset pointing to the raw orders CSV file in the Bronze layer. Used in ingestion pipeline for order data processing.",
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "parameters": {
+                    "pasta_arquivo": {
+                        "type": "string"
+                    },
+                    "nome_arquivo": {
+                        "type": "string"
+                    }
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": {
+                            "value": "@dataset().nome_arquivo",
+                            "type": "Expression"
+                        },
+                        "folderPath": {
+                            "value": "@dataset().pasta_arquivo",
+                            "type": "Expression"
+                        },
+                        "container": "bronze"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "order_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_status",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_purchase_timestamp",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_approved_at",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_delivered_carrier_date",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_delivered_customer_date",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_estimated_delivery_date",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_orders_silver_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "parameters": {
+                    "pasta_arquivo": {
+                        "type": "string"
+                    },
+                    "nome_arquivo": {
+                        "type": "string"
+                    }
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "orders_silver.csv",
+                        "folderPath": "silver/orders",
+                        "container": "silver"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "order_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_status",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_purchase_timestamp",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_approved_at",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_delivered_carrier_date",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_delivered_customer_date",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_estimated_delivery_date",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_customers_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "folderPath": "customers",
+                        "container": "bronze"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "customer_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_unique_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_zip_code_prefix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_state",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_order_items_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "order_items.csv",
+                        "folderPath": "order_items",
+                        "container": "bronze"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "order_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_item_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "product_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "seller_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "shipping_limit_date",
+                        "type": "String"
+                    },
+                    {
+                        "name": "price",
+                        "type": "String"
+                    },
+                    {
+                        "name": "freight_value",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_customers_silver_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "customers_silver.csv",
+                        "folderPath": "silver/customers",
+                        "container": "silver"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "customer_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_unique_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_zip_code_prefix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_state",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_order_items_silver_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "order_items_silver.csv",
+                        "folderPath": "silver/order_items",
+                        "container": "silver"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "order_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_item_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "product_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "seller_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "shipping_limit_date",
+                        "type": "String"
+                    },
+                    {
+                        "name": "price",
+                        "type": "String"
+                    },
+                    {
+                        "name": "freight_value",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_geolocation_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "geolocarion.csv",
+                        "folderPath": "geolocation",
+                        "container": "bronze"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "customer_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_unique_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_zip_code_prefix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_state",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_payments_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "payments.csv",
+                        "folderPath": "payments",
+                        "container": "bronze"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "customer_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_unique_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_zip_code_prefix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_state",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_reviews_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "reviews.csv",
+                        "folderPath": "reviews",
+                        "container": "bronze"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "customer_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_unique_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_zip_code_prefix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_state",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_sellers_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "reviews.csv",
+                        "folderPath": "reviews",
+                        "container": "bronze"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "customer_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_unique_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_zip_code_prefix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_state",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_products_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "products.csv",
+                        "folderPath": "products",
+                        "container": "bronze"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "customer_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_unique_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_zip_code_prefix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customer_state",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_products_silver_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "products_silver.csv",
+                        "folderPath": "silver/products",
+                        "container": "silver"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "product_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "product_category_name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "product_name_lenght",
+                        "type": "String"
+                    },
+                    {
+                        "name": "product_description_lenght",
+                        "type": "String"
+                    },
+                    {
+                        "name": "product_photos_qty",
+                        "type": "String"
+                    },
+                    {
+                        "name": "product_weight_g",
+                        "type": "String"
+                    },
+                    {
+                        "name": "product_length_cm",
+                        "type": "String"
+                    },
+                    {
+                        "name": "product_height_cm",
+                        "type": "String"
+                    },
+                    {
+                        "name": "product_width_cm",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_payments_silver_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "order_payments_silver.csv",
+                        "folderPath": "silver/payments",
+                        "container": "silver"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "order_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "payment_sequential",
+                        "type": "String"
+                    },
+                    {
+                        "name": "payment_type",
+                        "type": "String"
+                    },
+                    {
+                        "name": "payment_installments",
+                        "type": "String"
+                    },
+                    {
+                        "name": "payment_value",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_reviews_silver_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "order_reviews_silver.csv",
+                        "folderPath": "silver/reviews",
+                        "container": "silver"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "review_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "order_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "review_score",
+                        "type": "String"
+                    },
+                    {
+                        "name": "review_comment_title",
+                        "type": "String"
+                    },
+                    {
+                        "name": "review_comment_message",
+                        "type": "String"
+                    },
+                    {
+                        "name": "review_creation_date",
+                        "type": "String"
+                    },
+                    {
+                        "name": "review_answer_timestamp",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_sellers_silver_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "sellers_silver.csv",
+                        "folderPath": "silver/sellers",
+                        "container": "silver"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "seller_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "seller_zip_code_prefix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "seller_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "seller_state",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_geolocation_silver_csv')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "geolocation_silver.csv",
+                        "folderPath": "silver/geolocation",
+                        "container": "silver"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "geolocation_zip_code_prefix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "geolocation_lat",
+                        "type": "String"
+                    },
+                    {
+                        "name": "geolocation_lng",
+                        "type": "String"
+                    },
+                    {
+                        "name": "geolocation_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "geolocation_state",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/pedidos_com_clientes')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_blob_bronze",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobStorageLocation",
+                        "fileName": "pedidos_com_clientes.csv",
+                        "folderPath": "pedidos_com_clientes",
+                        "container": "gold"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_blob_bronze')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/pl_ingest_orders')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "Copiar dados brutos de pedidos da camada Bronze para a camada Prata",
+                "activities": [
+                    {
+                        "name": "ForEach1",
+                        "type": "ForEach",
+                        "dependsOn": [],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "items": {
+                                "value": "@pipeline().parameters.arquivos",
+                                "type": "Expression"
+                            },
+                            "activities": [
+                                {
+                                    "name": "Copy data1",
+                                    "type": "Copy",
+                                    "dependsOn": [],
+                                    "policy": {
+                                        "timeout": "00:30:00",
+                                        "retry": 0,
+                                        "retryIntervalInSeconds": 30,
+                                        "secureOutput": false,
+                                        "secureInput": false
+                                    },
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "source": {
+                                            "type": "DelimitedTextSource",
+                                            "storeSettings": {
+                                                "type": "AzureBlobStorageReadSettings",
+                                                "recursive": true,
+                                                "enablePartitionDiscovery": false
+                                            },
+                                            "formatSettings": {
+                                                "type": "DelimitedTextReadSettings"
+                                            }
+                                        },
+                                        "sink": {
+                                            "type": "DelimitedTextSink",
+                                            "storeSettings": {
+                                                "type": "AzureBlobStorageWriteSettings"
+                                            },
+                                            "formatSettings": {
+                                                "type": "DelimitedTextWriteSettings",
+                                                "quoteAllText": true,
+                                                "fileExtension": ".txt"
+                                            }
+                                        },
+                                        "enableStaging": false,
+                                        "translator": {
+                                            "type": "TabularTranslator",
+                                            "typeConversion": true,
+                                            "typeConversionSettings": {
+                                                "allowDataTruncation": true,
+                                                "treatBooleanAsNumber": false
+                                            }
+                                        }
+                                    },
+                                    "inputs": [
+                                        {
+                                            "referenceName": "ds_orders_csv",
+                                            "type": "DatasetReference",
+                                            "parameters": {
+                                                "pasta_arquivo": {
+                                                    "value": "@item().pasta",
+                                                    "type": "Expression"
+                                                },
+                                                "nome_arquivo": {
+                                                    "value": "@concat(item().nome, '.csv')",
+                                                    "type": "Expression"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "referenceName": "ds_orders_silver_csv",
+                                            "type": "DatasetReference",
+                                            "parameters": {
+                                                "pasta_arquivo": {
+                                                    "value": "@concat('silver/', item().pasta)",
+                                                    "type": "Expression"
+                                                },
+                                                "nome_arquivo": {
+                                                    "value": "@concat(item().nome, '_silver.csv')",
+                                                    "type": "Expression"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "policy": {
+                    "elapsedTimeMetric": {}
+                },
+                "parameters": {
+                    "arquivos": {
+                        "type": "array",
+                        "defaultValue": [
+                            {
+                                "nome": "customers",
+                                "pasta": "customers"
+                            },
+                            {
+                                "nome": "geolocation",
+                                "pasta": "geolocation"
+                            },
+                            {
+                                "nome": "order_items",
+                                "pasta": "order_items"
+                            },
+                            {
+                                "nome": "orders",
+                                "pasta": "orders"
+                            },
+                            {
+                                "nome": "order_payments",
+                                "pasta": "payments"
+                            },
+                            {
+                                "nome": "products",
+                                "pasta": "products"
+                            },
+                            {
+                                "nome": "order_reviews",
+                                "pasta": "reviews"
+                            },
+                            {
+                                "nome": "sellers",
+                                "pasta": "sellers"
+                            }
+                        ]
+                    }
+                },
+                "annotations": [],
+                "lastPublishTime": "2025-07-09T18:32:42Z"
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/datasets/ds_orders_csv')]",
+                "[concat(variables('factoryId'), '/datasets/ds_orders_silver_csv')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/df_join_orders_customers')]",
+            "type": "Microsoft.DataFactory/factories/dataflows",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "type": "MappingDataFlow",
+                "typeProperties": {
+                    "sources": [
+                        {
+                            "dataset": {
+                                "referenceName": "ds_orders_silver_csv",
+                                "type": "DatasetReference"
+                            },
+                            "name": "orders"
+                        },
+                        {
+                            "dataset": {
+                                "referenceName": "ds_customers_silver_csv",
+                                "type": "DatasetReference"
+                            },
+                            "name": "customers"
+                        }
+                    ],
+                    "sinks": [
+                        {
+                            "dataset": {
+                                "referenceName": "pedidos_com_clientes",
+                                "type": "DatasetReference"
+                            },
+                            "name": "sinkGold"
+                        }
+                    ],
+                    "transformations": [
+                        {
+                            "name": "join1"
+                        },
+                        {
+                            "name": "select1"
+                        }
+                    ],
+                    "scriptLines": [
+                        "source(output(",
+                        "          order_id as string,",
+                        "          customer_id as string,",
+                        "          order_status as string,",
+                        "          order_purchase_timestamp as string,",
+                        "          order_approved_at as string,",
+                        "          order_delivered_carrier_date as string,",
+                        "          order_delivered_customer_date as string,",
+                        "          order_estimated_delivery_date as string",
+                        "     ),",
+                        "     allowSchemaDrift: true,",
+                        "     validateSchema: false,",
+                        "     ignoreNoFilesFound: false) ~> orders",
+                        "source(output(",
+                        "          customer_id as string,",
+                        "          customer_unique_id as string,",
+                        "          customer_zip_code_prefix as string,",
+                        "          customer_city as string,",
+                        "          customer_state as string",
+                        "     ),",
+                        "     allowSchemaDrift: true,",
+                        "     validateSchema: false,",
+                        "     ignoreNoFilesFound: false) ~> customers",
+                        "orders, customers join(orders@customer_id == customers@customer_id,",
+                        "     joinType:'inner',",
+                        "     matchType:'exact',",
+                        "     ignoreSpaces: false,",
+                        "     broadcast: 'auto')~> join1",
+                        "join1 select(mapColumn(",
+                        "          order_id,",
+                        "          order_status,",
+                        "          order_purchase_timestamp,",
+                        "          order_delivered_carrier_date,",
+                        "          order_delivered_customer_date,",
+                        "          order_estimated_delivery_date,",
+                        "          customer_unique_id,",
+                        "          customer_city,",
+                        "          customer_state",
+                        "     ),",
+                        "     skipDuplicateMapInputs: true,",
+                        "     skipDuplicateMapOutputs: true) ~> select1",
+                        "select1 sink(allowSchemaDrift: true,",
+                        "     validateSchema: false,",
+                        "     skipDuplicateMapInputs: true,",
+                        "     skipDuplicateMapOutputs: true,",
+                        "     partitionBy('hash', 1)) ~> sinkGold"
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/datasets/ds_orders_silver_csv')]",
+                "[concat(variables('factoryId'), '/datasets/ds_customers_silver_csv')]",
+                "[concat(variables('factoryId'), '/datasets/pedidos_com_clientes')]"
+            ]
+        }
+    ]
+}

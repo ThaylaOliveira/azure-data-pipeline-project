@@ -1,0 +1,198 @@
+{
+  "resources": [
+    {
+      "name": "ds_products_csv",
+      "type": "Microsoft.DataFactory/factories/datasets",
+      "properties": {
+        "linkedServiceName": {
+          "referenceName": "ls_blob_bronze",
+          "type": "LinkedServiceReference"
+        },
+        "type": "DelimitedText",
+        "typeProperties": {
+          "location": {
+            "type": "AzureBlobStorageLocation",
+            "filePath": "products/products.csv"
+          },
+          "columnDelimiter": ",",
+          "firstRowAsHeader": true
+        }
+      }
+    },
+    {
+      "name": "ds_geolocation_csv",
+      "type": "Microsoft.DataFactory/factories/datasets",
+      "properties": {
+        "linkedServiceName": {
+          "referenceName": "ls_blob_bronze",
+          "type": "LinkedServiceReference"
+        },
+        "type": "DelimitedText",
+        "typeProperties": {
+          "location": {
+            "type": "AzureBlobStorageLocation",
+            "filePath": "geolocation/products.csv"
+          },
+          "columnDelimiter": ",",
+          "firstRowAsHeader": true
+        }
+      }
+    },
+    {
+      "name": "ds_payments_csv",
+      "type": "Microsoft.DataFactory/factories/datasets",
+      "properties": {
+        "linkedServiceName": {
+          "referenceName": "ls_blob_bronze",
+          "type": "LinkedServiceReference"
+        },
+        "type": "DelimitedText",
+        "typeProperties": {
+          "location": {
+            "type": "AzureBlobStorageLocation",
+            "filePath": "payments/products.csv"
+          },
+          "columnDelimiter": ",",
+          "firstRowAsHeader": true
+        }
+      }
+    },
+    {
+      "name": "ds_reviews_csv",
+      "type": "Microsoft.DataFactory/factories/datasets",
+      "properties": {
+        "linkedServiceName": {
+          "referenceName": "ls_blob_bronze",
+          "type": "LinkedServiceReference"
+        },
+        "type": "DelimitedText",
+        "typeProperties": {
+          "location": {
+            "type": "AzureBlobStorageLocation",
+            "filePath": "reviews/products.csv"
+          },
+          "columnDelimiter": ",",
+          "firstRowAsHeader": true
+        }
+      }
+    },
+    {
+      "name": "ds_sellers_csv",
+      "type": "Microsoft.DataFactory/factories/datasets",
+      "properties": {
+        "linkedServiceName": {
+          "referenceName": "ls_blob_bronze",
+          "type": "LinkedServiceReference"
+        },
+        "type": "DelimitedText",
+        "typeProperties": {
+          "location": {
+            "type": "AzureBlobStorageLocation",
+            "filePath": "sellers/products.csv"
+          },
+          "columnDelimiter": ",",
+          "firstRowAsHeader": true
+        }
+      }
+    },
+    {
+      "name": "ds_products_silver_csv",
+      "type": "Microsoft.DataFactory/factories/datasets",
+      "properties": {
+        "linkedServiceName": {
+          "referenceName": "ls_blob_bronze",
+          "type": "LinkedServiceReference"
+        },
+        "type": "DelimitedText",
+        "typeProperties": {
+          "location": {
+            "type": "AzureBlobStorageLocation",
+            "filePath": "silver/products/products_silver.csv"
+          },
+          "columnDelimiter": ",",
+          "firstRowAsHeader": true
+        },
+        "schema": []
+      }
+    },
+    {
+      "name": "ds_geolocation_silver_csv",
+      "type": "Microsoft.DataFactory/factories/datasets",
+      "properties": {
+        "linkedServiceName": {
+          "referenceName": "ls_blob_bronze",
+          "type": "LinkedServiceReference"
+        },
+        "type": "DelimitedText",
+        "typeProperties": {
+          "location": {
+            "type": "AzureBlobStorageLocation",
+            "filePath": "silver/geolocation/products_silver.csv"
+          },
+          "columnDelimiter": ",",
+          "firstRowAsHeader": true
+        },
+        "schema": []
+      }
+    },
+    {
+      "name": "ds_payments_silver_csv",
+      "type": "Microsoft.DataFactory/factories/datasets",
+      "properties": {
+        "linkedServiceName": {
+          "referenceName": "ls_blob_bronze",
+          "type": "LinkedServiceReference"
+        },
+        "type": "DelimitedText",
+        "typeProperties": {
+          "location": {
+            "type": "AzureBlobStorageLocation",
+            "filePath": "silver/payments/products_silver.csv"
+          },
+          "columnDelimiter": ",",
+          "firstRowAsHeader": true
+        },
+        "schema": []
+      }
+    },
+    {
+      "name": "ds_reviews_silver_csv",
+      "type": "Microsoft.DataFactory/factories/datasets",
+      "properties": {
+        "linkedServiceName": {
+          "referenceName": "ls_blob_bronze",
+          "type": "LinkedServiceReference"
+        },
+        "type": "DelimitedText",
+        "typeProperties": {
+          "location": {
+            "type": "AzureBlobStorageLocation",
+            "filePath": "silver/reviews/products_silver.csv"
+          },
+          "columnDelimiter": ",",
+          "firstRowAsHeader": true
+        },
+        "schema": []
+      }
+    },
+    {
+      "name": "ds_sellers_silver_csv",
+      "type": "Microsoft.DataFactory/factories/datasets",
+      "properties": {
+        "linkedServiceName": {
+          "referenceName": "ls_blob_bronze",
+          "type": "LinkedServiceReference"
+        },
+        "type": "DelimitedText",
+        "typeProperties": {
+          "location": {
+            "type": "AzureBlobStorageLocation",
+            "filePath": "silver/sellers/products_silver.csv"
+          },
+          "columnDelimiter": ",",
+          "firstRowAsHeader": true
+        },
+        "schema": []
+      }
+    }
+}
