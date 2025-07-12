@@ -22,7 +22,11 @@ Utilizamos Azure Data Factory para orquestração e Azure Data Flow (Spark) para
 
 ---
 
-### 🗂 Estrutura dos Dados
+## 🔎 Arquitetura do Pipeline
+
+<img src="./images/1.png" alt="Arquitetura do pipeline" width="500"/>
+
+## 🗂 Estrutura dos Dados
 
 - **Camada Bronze:** dados brutos importados diretamente dos arquivos CSV originais.
 - **Camada Silver:** dados limpos e estruturados, com tratamentos e ajustes.
